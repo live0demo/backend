@@ -17,11 +17,16 @@ public class UserEntity implements UserDTO {
     @Column(name = "name")
     private String name;
     @NotNull
-    @Column(name = "public_key")
+    @Column(name = "public_key",unique = true)
     private String publicKey;
     @NotNull
     @Column(name = "password")
     private String password;
+
+    @Override
+    public Long getId() {
+        return this.id;
+    }
 
     @Override
     public String getName() {

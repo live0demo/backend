@@ -1,6 +1,7 @@
 package com.example.backend.database.dto;
 
 public interface UserDTO {
+    Long getId();
     String getName();
     void setName(String name);
     String getPublicKey();

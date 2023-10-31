@@ -10,5 +10,5 @@ import com.example.backend.database.entity.UserEntity;
 public interface UserService {
     RegisterRS registerAccount(RegisterRQ registerRQ);
     LoginRS login(LoginRQ loginRQ);
-    LoggedInRS getUserLoggedIn();
+    LoggedInRS getUserLoggedIn(String jwt);
 }

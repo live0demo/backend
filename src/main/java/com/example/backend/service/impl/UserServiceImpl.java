@@ -12,9 +12,6 @@ import com.example.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -23,10 +20,9 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     @Autowired
-    private UserRepo userRepo;
-
-    @Autowired
     private JwtService jwtService;
+    @Autowired
+    private UserRepo userRepo;
 
     @Override
     public RegisterRS registerAccount(RegisterRQ registerRQ) {
@@ -47,11 +43,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginRS login(LoginRQ loginRQ) {
-        UserEntity user=userRepo.findByPublicKey(loginRQ.getPublicKey());
+        String username=loginRQ.getPublicKey();
+        String password=loginRQ.getPassword();
         LoginRS loginRS=new LoginRS();
-        if(user==null||!user.getPassword().equals(loginRQ.getPassword())){
-            loginRS.setStatus("User not exists.");
-            loginRS.setJwt("");
+        UserEntity userEntity=userRepo.findByPublicKey(username);
+        if(userEntity==null||!password.equals(userEntity.getPassword())){
+            loginRS.setStatus("Failed, wrong Username or password. Please try again or register new account!");
             return loginRS;
         }
         String jwt=jwtService.generateToken(loginRQ.getPublicKey());
@@ -61,21 +58,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public LoggedInRS getUserLoggedIn() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public LoggedInRS getUserLoggedIn(String jwt) {
         LoggedInRS loggedInRS=new LoggedInRS();
-        if (authentication == null) {
-            loggedInRS.setStatus("User not authenticated");
-            loggedInRS.setUserEntity(new UserEntity());
+        if(!jwtService.validateToken(jwt)){
+            loggedInRS.setStatus("Session has expired. Please log in again!");
             return loggedInRS;
         }
-
-        UserEntity userEntity = userRepo.findByPublicKey(authentication.getName());
-        if (userEntity == null) {
-            loggedInRS.setStatus("User not found");
-            loggedInRS.setUserEntity(new UserEntity());
-        }
-        loggedInRS.setStatus("Success!");
+        String publicKey=jwtService.getUsernameFromJWT(jwt);
+        UserEntity userEntity=userRepo.findByPublicKey(publicKey);
+        loggedInRS.setStatus("Success");
         loggedInRS.setUserEntity(userEntity);
         return loggedInRS;
     }
