@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api")
+@CrossOrigin("http://localhost:3000/")
 public class UserServiceController {
 
 
@@ -52,6 +53,4 @@ public class UserServiceController {
         }
         return ResponseEntity.ok(loggedInRS.getUserEntity());
     }
-
-
 }
